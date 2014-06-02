@@ -32,7 +32,7 @@ RemoteSystemsTempFiles/
 *.class
 
 # generated GUI files
-*R.java
+*/R.java
 
 ### eclipse files we DO want
 # local.properties
