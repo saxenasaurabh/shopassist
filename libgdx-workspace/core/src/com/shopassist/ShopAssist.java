@@ -2,109 +2,60 @@ package com.shopassist;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.ApplicationListener;
-import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.graphics.PerspectiveCamera;
-import com.badlogic.gdx.graphics.g3d.Environment;
-import com.badlogic.gdx.graphics.g3d.Model;
-import com.badlogic.gdx.graphics.g3d.ModelBatch;
-import com.badlogic.gdx.graphics.g3d.ModelInstance;
-import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
-import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
-import com.badlogic.gdx.graphics.g3d.model.Node;
-import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
-import com.badlogic.gdx.utils.Array;
 
 public class ShopAssist implements ApplicationListener {
-	static final String RACK_PREFIX = "rack";
+//	static final String RACK_PREFIX = "rack";
 	public static final String TAG = "LOGGING_TAG";
+	private Scene scene = Scene.getInstance();
 	
-	public PerspectiveCamera cam;
-	public CameraInputController camController;
-	public ModelBatch modelBatch;
-	public AssetManager assets;
-	public Environment lights;
-	public boolean loading;
-	public Array<ModelInstance> racks = new Array<ModelInstance>();
 
+	public ModelLoader modelLoader = ModelLoader.getInstance();
+	boolean loading = false;
+
+	// Updates the info panel.
 	public InfoUpdater infoUpdater = new InfoUpdater();
 	
 	@Override
 	public void create () {
-		modelBatch = new ModelBatch();
-		lights = new Environment();
-		lights.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1.f));
-		lights.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, -1f, -0.8f, -0.2f));
-
-		cam = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		cam.position.set(0f, 0f, 150f);
-		cam.lookAt(0, 0, 0);
-		cam.near = 0.1f;
-		cam.far = 300f;
-		cam.update();
-
-		InputMultiplexer multiplexer = new InputMultiplexer();
-		camController = new CameraInputController(cam);
-		// Performs 3d scene transformations based on user
-		// interaction.
-		multiplexer.addProcessor(camController);
-		// Updates the info panel.
-		multiplexer.addProcessor(infoUpdater);
-		Gdx.input.setInputProcessor(multiplexer);
-
-		assets = new AssetManager();
-		assets.load("map_with_3_racks.g3dj", Model.class);
+		// Load map.
 		loading = true;
+		modelLoader.load();
+		// Initialize camera, environment etc. in the scene.
+		scene.init();
+
+//		InputMultiplexer inputMultiplexer = new InputMultiplexer();
+//		inputMultiplexer.addProcessor(scene.camController);
+//		inputMultiplexer.addProcessor(infoUpdater);
+//		Gdx.input.setInputProcessor(inputMultiplexer);
+		
+		InputMultiplexer inputMultiplexer = (InputMultiplexer) Gdx.input.getInputProcessor();
+		if (inputMultiplexer == null) {
+			Gdx.input.setInputProcessor((new InputMultiplexer(infoUpdater)));
+		} else {
+			inputMultiplexer.addProcessor(infoUpdater);
+		}
 	}
 
 	private void doneLoading () {
-		// The scene map_with_3_racks.g3dj contains three racks
-		// with ids rack1, rack2 and rack3.
-		Model model = assets.get("map_with_3_racks.g3dj", Model.class);
-		Gdx.app.log(TAG, "Number of nodes: " + model.nodes.size);
-		for (int i = 0; i < model.nodes.size; i++) {
-			String id = model.nodes.get(i).id;
-			Gdx.app.log(TAG, "Processing node " + id);
-			ModelInstance instance = new ModelInstance(model, id);
-			Node node = instance.getNode(id);
-
-			instance.transform.set(node.globalTransform);
-			node.translation.set(0, 0, 0);
-			node.scale.set(1, 1, 1);
-			node.rotation.idt();
-			instance.calculateTransforms();
-
-			if (id.startsWith(RACK_PREFIX)) {
-				racks.add(instance);
-				continue;
-			} else {
-				// Handle other types of nodes
-				Gdx.app.error(TAG, "Invalid node id " + id);
-			}
-		}
+		scene.loadModels();
 		loading = false;
 	}
 
 	@Override
 	public void render () {
-		if (loading && assets.update()) doneLoading();
-		camController.update();
-
-		Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-
-		modelBatch.begin(cam);
-		for (ModelInstance rack : racks)
-			modelBatch.render(rack, lights);
-		modelBatch.end();
+		if (loading && modelLoader.finishedLoading()) {
+			doneLoading();
+		}
+		if (!loading) {
+			scene.render();
+		}
 	}
 
 	@Override
 	public void dispose () {
-		modelBatch.dispose();
-		racks.clear();
-		assets.dispose();
+		scene.dispose();
+		modelLoader.dispose();
 		infoUpdater.dispose();
 	}
 
