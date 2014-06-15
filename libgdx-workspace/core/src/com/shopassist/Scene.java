@@ -15,6 +15,7 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
+import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.utils.Disposable;
 
 class Scene implements Disposable {
@@ -69,6 +70,32 @@ class Scene implements Disposable {
 	
 	void clearModels() {
 		sceneEntityStore.clear();
+	}
+	
+	void unselectAllEntities() {
+		SceneEntity[] sceneEntities = sceneEntityStore.getListOfEntities();
+		Gdx.app.log(ShopAssist.TAG, sceneEntities.length + " number of entities");
+		for (SceneEntity sceneEntity : sceneEntities) {
+			sceneEntity.state = SceneEntityState.NOT_SELECTED;
+		}
+	}
+	
+	SceneEntity getTouchedEntity(int screenX, int screenY) {
+		Ray ray = cam.getPickRay(screenX, screenY);
+		SceneEntity selectedEntity = null;
+	    float distance = -1;
+	    for (SceneEntity sceneEntity : sceneEntityStore.getListOfEntities()) {
+	        final float dist2 = sceneEntity.shape.intersects(sceneEntity.modelInstance.transform, ray);
+	        if (dist2 >= 0f && (distance < 0f || dist2 <= distance)) { 
+	            selectedEntity = sceneEntity;
+	            distance = dist2;
+	        }
+	    }
+	    return selectedEntity;
+	}
+	
+	void markSelected(SceneEntity sceneEntity) {
+		sceneEntity.state = SceneEntityState.SELECTED;
 	}
 	
 	/**

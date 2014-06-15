@@ -1,5 +1,5 @@
 package com.shopassist;
 
 public interface OnInfoNeedsUpdateListener {
-	void onInfoNeedsUpdate();
+	void onInfoNeedsUpdate(String message);
 }

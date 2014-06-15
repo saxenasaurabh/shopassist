@@ -5,7 +5,6 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.ApplicationListener;
 
 public class ShopAssist implements ApplicationListener {
-//	static final String RACK_PREFIX = "rack";
 	public static final String TAG = "LOGGING_TAG";
 	private Scene scene = Scene.getInstance();
 	
@@ -23,11 +22,6 @@ public class ShopAssist implements ApplicationListener {
 		modelLoader.load();
 		// Initialize camera, environment etc. in the scene.
 		scene.init();
-
-//		InputMultiplexer inputMultiplexer = new InputMultiplexer();
-//		inputMultiplexer.addProcessor(scene.camController);
-//		inputMultiplexer.addProcessor(infoUpdater);
-//		Gdx.input.setInputProcessor(inputMultiplexer);
 		
 		InputMultiplexer inputMultiplexer = (InputMultiplexer) Gdx.input.getInputProcessor();
 		if (inputMultiplexer == null) {

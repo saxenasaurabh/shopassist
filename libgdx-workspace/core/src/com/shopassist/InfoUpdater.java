@@ -39,7 +39,15 @@ public class InfoUpdater extends InfoUpdateListener
 		// TODO(srbs): Implement the logic for figuring out the
 		// object that should be focused from the point of touch
 		// and send an appropriate message to the callback.
-		updateInfo();
+		Scene scene = Scene.getInstance();
+		scene.unselectAllEntities();
+		SceneEntity touchedEntity = scene.getTouchedEntity(screenX, screenY);
+		if (touchedEntity != null) {
+			scene.markSelected(touchedEntity);
+			updateInfo(touchedEntity.modelInstance.nodes.get(0).id + " selected");
+		} else {
+			updateInfo("None selected");
+		}
 		return true;
 	}
 
@@ -72,9 +80,9 @@ class InfoUpdateListener implements Disposable {
 	Array<OnInfoNeedsUpdateListener> listeners =
 			new Array<OnInfoNeedsUpdateListener>();
 	
-	public void updateInfo() {
+	public void updateInfo(String message) {
 		for (OnInfoNeedsUpdateListener listener : listeners) {
-			listener.onInfoNeedsUpdate();
+			listener.onInfoNeedsUpdate(message);
 		}
 	}
 

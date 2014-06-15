@@ -10,5 +10,8 @@ import java.util.HashSet;
  */
 @SuppressWarnings("serial")
 class SceneEntityStore extends HashSet<SceneEntity> {
-	
+	SceneEntity[] getListOfEntities() {
+		SceneEntity[] listOfEntities = new SceneEntity[0];
+		return toArray(listOfEntities);
+	}
 }

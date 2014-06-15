@@ -29,13 +29,13 @@ public class AndroidLauncher extends AndroidApplication implements OnInfoNeedsUp
 	}
 
 	@Override
-	public void onInfoNeedsUpdate() {
+	public void onInfoNeedsUpdate(final String message) {
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
 				TextView info = (TextView) findViewById(R.id.info);
 				// TODO(srbs): This should display info about the touched object.
-				info.setText("Screen touched");
+				info.setText(message);
 				info.invalidate();
 			}
 		});
